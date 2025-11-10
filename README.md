@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Ecoomerce-using-js
+=======
+# Ecommerce-using-js
+>>>>>>> 105d711d084e844591d63c818382553481374352
 
 A small full-stack e-commerce demo built with a React (Vite) frontend and a Node + Express + MongoDB backend. The repository contains a frontend site (in `Ecommerce/`) and a backend API server (in `backend/`).
 
