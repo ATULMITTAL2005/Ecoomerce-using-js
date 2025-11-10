@@ -1,83 +1,92 @@
 import { createContext, useEffect, useState } from "react";
-import { products } from "../assets/frontend_assets/assets";
-import {toast} from "react-toastify";
-import { useNavigate } from 'react-router-dom'
+import { toast } from "react-toastify";
+import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
   const currency = "$";
   const delivery_fee = 10;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(true);
-  const [cartItems,setCartItems] = useState({});
-  const navigate= useNavigate();
+  const [cartItems, setCartItems] = useState({});
+  const [products, setProducts] = useState([]);
+  const [token, setToken] = useState('');// ✅ Fixed name
+  const navigate = useNavigate();
 
-
-  const addToCart = async(itemId,size) =>{
-
-    if(!size){
-      toast.error('select Product Size');
+  const addToCart = (itemId, size) => {
+    if (!size) {
+      toast.error("Select product size");
       return;
     }
-    // make copy of cart items
+
     let cartData = structuredClone(cartItems);
-     if(cartData[itemId]){
-      if(cartData[itemId][size]){
-        cartData[itemId][size] +=1;
-      }
-      else{
-        cartData[itemId][size] = 1;
-      }
-     }
-     else{
-       cartData[itemId]={};
-       cartData[itemId][size]= 1;
-     }
-     setCartItems(cartData);
-  }
 
- 
+    if (!cartData[itemId]) {
+      cartData[itemId] = {};
+    }
 
-const getCartCount = () => {
-  let totalCount = 0;
-  for (const items in cartItems) {
-    for (const item in cartItems[items]) {
-      try {
-        if (cartItems[items][item] > 0) {
-          totalCount += cartItems[items][item];
+    cartData[itemId][size] = (cartData[itemId][size] || 0) + 1;
+
+    setCartItems(cartData);
+  };
+
+  const getCartCount = () => {
+    let totalCount = 0;
+
+    for (const productId in cartItems) {
+      for (const size in cartItems[productId]) {
+        const quantity = cartItems[productId][size];
+        if (quantity > 0) totalCount += quantity;
+      }
+    }
+    return totalCount;
+  };
+
+  const updateQuantity = (itemId, size, quantity) => {
+    let cartData = structuredClone(cartItems);
+    cartData[itemId][size] = quantity;
+    setCartItems(cartData);
+  };
+
+  const getCartAmount = () => {
+    let totalAmount = 0;
+
+    for (const productId in cartItems) {
+      const product = products.find((p) => p._id === productId);
+      if (!product) continue;
+
+      for (const size in cartItems[productId]) {
+        const quantity = cartItems[productId][size];
+        if (quantity > 0) {
+          totalAmount += product.price * quantity;
         }
-      } catch (error) {
-        // ignore errors
       }
     }
-  }
-  return totalCount;
-}
 
-const upadateQuantity = async(itemId,size,quantity)=>{
-   let cartData= structuredClone(cartItems);
-   cartData[itemId][size] =quantity;
-   setCartItems(cartData);
-}
-const getCartAmount = () => {
-  let totalAmount = 0;
+    return totalAmount;
+  };
 
-  for (const productId in cartItems) {
-    const itemInfo = products.find(product => product._id === productId);
-    if (!itemInfo) continue; // skip if product not found
-
-    for (const size in cartItems[productId]) {
-      const quantity = cartItems[productId][size];
-      if (quantity > 0) {
-        totalAmount += itemInfo.price * quantity;
+  const getProductsData = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/product/list`);
+      if (response.data.success) {
+        setProducts(response.data.products);
+      } else {
+        toast.error(response.data.message);
       }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
     }
-  }
+  };
 
-  return totalAmount;
-};
+  useEffect(() => {
+    getProductsData();
+  }, []);
 
   const value = {
     products,
@@ -87,11 +96,14 @@ const getCartAmount = () => {
     setSearch,
     showSearch,
     setShowSearch,
-    cartItems,addToCart,
+    cartItems,
+    addToCart,
     getCartCount,
-    upadateQuantity,
+    updateQuantity,    // ✅ fixed name exposed
     getCartAmount,
-    navigate
+    navigate,
+    backendUrl,
+    setToken,token
   };
 
   return (
