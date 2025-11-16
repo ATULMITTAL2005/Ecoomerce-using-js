@@ -7,13 +7,14 @@ import Footer from './components/Footer'
 import SearchBar from './components/SearchBar'
 import Product from './pages/Product'
 import ProductItem from './components/ProductItem';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import Cart from './pages/Cart';
 import PlaceOrder from './pages/PlaceOrder';
 import Orders from './pages/Orders';
 import Login from './pages/Login';
 import About from './pages/About';
 import Contact from './pages/Contact';
+
 
 function App() {
   return (

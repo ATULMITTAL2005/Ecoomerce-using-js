@@ -1,11 +1,12 @@
 import React, { useContext, useState, useEffect } from "react";
 import { ShopContext } from "../context/ShopContext";
-import { assets } from "../assets/frontend_assets/assets";
+// import { assets } from "../assets/frontend_assets/assets";
 import Title from "../components/Title";
 import ProductItem from "../components/ProductItem";
 
 const Collection = () => {
-  const { products, search, showSearch } = useContext(ShopContext);
+  const { products, search, showSearch, refreshProducts } =
+    useContext(ShopContext);
   const [showFilter, setShowFilter] = useState(true);
   const [filterProducts, setFilterProducts] = useState([]);
   const [category, setCategory] = useState([]);
@@ -32,8 +33,12 @@ const Collection = () => {
     }
   };
 
-  // Apply filters
-  const applyFilter = () => {
+  // Filtering is handled in useEffect when dependencies change
+
+  // Sorting handled in useEffect when sortType changes
+
+  // Apply filters when filters/search change
+  useEffect(() => {
     let productsCopy = products.slice();
 
     if (showSearch && search) {
@@ -55,33 +60,27 @@ const Collection = () => {
     }
 
     setFilterProducts(productsCopy);
-  };
-
-  // Sort products
-  const sortProducts = () => {
-    let fpCopy = [...filterProducts];
-
-    switch (sortType) {
-      case "low-high":
-        setFilterProducts(fpCopy.sort((a, b) => a.price - b.price));
-        break;
-      case "high-low":
-        setFilterProducts(fpCopy.sort((a, b) => b.price - a.price));
-        break;
-      default:
-        applyFilter();
-        break;
-    }
-  };
-
-  // Apply filters when filters/search change
-  useEffect(() => {
-    applyFilter();
   }, [category, subCategory, search, showSearch, products]);
+
+  // Ensure latest products are fetched when this page mounts
+  useEffect(() => {
+    if (typeof refreshProducts === "function") refreshProducts();
+  }, [refreshProducts]);
 
   // Sort when sort type changes
   useEffect(() => {
-    sortProducts();
+    // perform sorting inline to keep dependencies explicit
+    setFilterProducts((prev) => {
+      const fpCopy = [...prev];
+      switch (sortType) {
+        case "low-high":
+          return fpCopy.sort((a, b) => a.price - b.price);
+        case "high-low":
+          return fpCopy.sort((a, b) => b.price - a.price);
+        default:
+          return fpCopy;
+      }
+    });
   }, [sortType]);
 
   return (
@@ -112,7 +111,7 @@ const Collection = () => {
               <input
                 className="w-3"
                 type="checkbox"
-                value="Men"
+                value="men"
                 onChange={toggleCategory}
               />
               Men
@@ -121,7 +120,7 @@ const Collection = () => {
               <input
                 className="w-3"
                 type="checkbox"
-                value="Women"
+                value="women"
                 onChange={toggleCategory}
               />
               Women
@@ -130,7 +129,7 @@ const Collection = () => {
               <input
                 className="w-3"
                 type="checkbox"
-                value="Kids"
+                value="kids"
                 onChange={toggleCategory}
               />
               Kids
@@ -150,7 +149,7 @@ const Collection = () => {
               <input
                 className="w-3"
                 type="checkbox"
-                value="Topwear"
+                value="topwear"
                 onChange={toggleSubCategory}
               />
               Topwear
@@ -159,7 +158,7 @@ const Collection = () => {
               <input
                 className="w-3"
                 type="checkbox"
-                value="Bottomwear"
+                value="bottomwear"
                 onChange={toggleSubCategory}
               />
               Bottomwear
@@ -168,7 +167,7 @@ const Collection = () => {
               <input
                 className="w-3"
                 type="checkbox"
-                value="Winterwear"
+                value="winterwear"
                 onChange={toggleSubCategory}
               />
               Winterwear

@@ -55,7 +55,7 @@ const Add = ({ token }) => {
       formData.append("price", price);
       formData.append("category", category);
       formData.append("subCategory", subCategory);
-      formData.append("bestseller", bestseller);
+      formData.append("bestseller", bestseller ? "true" : "false"); // ✅ Send as string
       formData.append("sizes", JSON.stringify(selectedSizes));
 
       images.forEach((img, index) => {
@@ -81,6 +81,15 @@ const Add = ({ token }) => {
         setImages([null, null, null, null]);
         setPreviews([null, null, null, null]);
         setSelectedSizes([]);
+
+        // ✅ Optional: refresh product list here
+        try {
+          window.dispatchEvent(
+            new CustomEvent("product:added", { detail: response.data.product })
+          );
+        } catch {
+          /* ignore */
+        }
       } else {
         toast.error(response.data.message);
       }
@@ -104,15 +113,35 @@ const Add = ({ token }) => {
         <p className="text-md font-medium mb-2 text-gray-700">Upload Images</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((num, index) => (
-            <div key={num} className="border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition cursor-pointer p-2 flex justify-center items-center h-28 sm:h-32 relative overflow-hidden">
-              <label htmlFor={`image${num}`} className="w-full h-full flex justify-center items-center">
+            <div
+              key={num}
+              className="border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition cursor-pointer p-2 flex justify-center items-center h-28 sm:h-32 relative overflow-hidden"
+            >
+              <label
+                htmlFor={`image${num}`}
+                className="w-full h-full flex justify-center items-center"
+              >
                 {previews[index] ? (
-                  <img src={previews[index]} alt={`Preview ${num}`} className="w-full h-full object-cover rounded-md" />
+                  <img
+                    src={previews[index]}
+                    alt={`Preview ${num}`}
+                    className="w-full h-full object-cover rounded-md"
+                  />
                 ) : (
-                  <img src={assets.upload_area} className="w-10 sm:w-12 opacity-60 hover:opacity-100 transition" alt="Upload" />
+                  <img
+                    src={assets.upload_area}
+                    className="w-10 sm:w-12 opacity-60 hover:opacity-100 transition"
+                    alt="Upload"
+                  />
                 )}
               </label>
-              <input type="file" id={`image${num}`} hidden accept="image/*" onChange={(e) => handleImageChange(e, index)} />
+              <input
+                type="file"
+                id={`image${num}`}
+                hidden
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, index)}
+              />
             </div>
           ))}
         </div>
@@ -121,27 +150,60 @@ const Add = ({ token }) => {
       {/* Name + Price */}
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
-          <label className="block font-medium mb-1 text-gray-700">Product Name</label>
-          <input type="text" placeholder="Type here" required value={name} onChange={(e) => setName(e.target.value)} className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200" />
+          <label className="block font-medium mb-1 text-gray-700">
+            Product Name
+          </label>
+          <input
+            type="text"
+            placeholder="Type here"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+          />
         </div>
 
         <div>
-          <label className="block font-medium mb-1 text-gray-700">Product Price</label>
-          <input type="number" placeholder="Enter price" required value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200" />
+          <label className="block font-medium mb-1 text-gray-700">
+            Product Price
+          </label>
+          <input
+            type="number"
+            placeholder="Enter price"
+            required
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+          />
         </div>
       </div>
 
       {/* Description */}
       <div>
-        <label className="block font-medium mb-1 text-gray-700">Product Description</label>
-        <textarea placeholder="Describe the product..." required rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200"></textarea>
+        <label className="block font-medium mb-1 text-gray-700">
+          Product Description
+        </label>
+        <textarea
+          placeholder="Describe the product..."
+          required
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+        ></textarea>
       </div>
 
       {/* Category + SubCategory */}
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
-          <label className="block font-medium mb-1 text-gray-700">Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200">
+          <label className="block font-medium mb-1 text-gray-700">
+            Category
+          </label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+          >
             <option value="men">Male</option>
             <option value="women">Female</option>
             <option value="kids">Kids</option>
@@ -149,8 +211,14 @@ const Add = ({ token }) => {
         </div>
 
         <div>
-          <label className="block font-medium mb-1 text-gray-700">Sub Category</label>
-          <select value={subCategory} onChange={(e) => setSubCategory(e.target.value)} className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200">
+          <label className="block font-medium mb-1 text-gray-700">
+            Sub Category
+          </label>
+          <select
+            value={subCategory}
+            onChange={(e) => setSubCategory(e.target.value)}
+            className="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+          >
             <option value="topwear">Topwear</option>
             <option value="bottomwear">Bottomwear</option>
             <option value="winterwear">Winterwear</option>
@@ -161,11 +229,21 @@ const Add = ({ token }) => {
 
       {/* Sizes */}
       <div>
-        <label className="block font-medium mb-2 text-gray-700">Available Sizes</label>
+        <label className="block font-medium mb-2 text-gray-700">
+          Available Sizes
+        </label>
         <div className="flex flex-wrap gap-3">
           {allSizes.map((size) => (
-            <label key={size} className="flex items-center gap-1 text-sm sm:text-base">
-              <input type="checkbox" value={size} checked={selectedSizes.includes(size)} onChange={() => handleSizeChange(size)} />
+            <label
+              key={size}
+              className="flex items-center gap-1 text-sm sm:text-base"
+            >
+              <input
+                type="checkbox"
+                value={size}
+                checked={selectedSizes.includes(size)}
+                onChange={() => handleSizeChange(size)}
+              />
               {size}
             </label>
           ))}
@@ -176,13 +254,21 @@ const Add = ({ token }) => {
       <div className="flex items-center justify-between sm:justify-start gap-3">
         <label className="font-medium text-gray-700">Bestseller</label>
         <label className="inline-flex items-center cursor-pointer">
-          <input type="checkbox" checked={bestseller} onChange={() => setBestseller(!bestseller)} className="sr-only peer" />
+          <input
+            type="checkbox"
+            checked={bestseller}
+            onChange={() => setBestseller(!bestseller)}
+            className="sr-only peer"
+          />
           <div className="w-11 h-6 bg-gray-300 peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-500 transition"></div>
         </label>
       </div>
 
       {/* Submit Button */}
-      <button type="submit" className="w-full bg-blue-600 text-white p-3 rounded-md font-medium hover:bg-blue-700 transition">
+      <button
+        type="submit"
+        className="w-full bg-blue-600 text-white p-3 rounded-md font-medium hover:bg-blue-700 transition"
+      >
         Add
       </button>
     </form>

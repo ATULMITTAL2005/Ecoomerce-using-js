@@ -6,7 +6,15 @@ import productModel from "../models/productModel.js";
 =========================== */
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, category, subCategory, sizes, bestseller } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      subCategory,
+      sizes,
+      bestseller,
+    } = req.body;
 
     // ✅ Parse sizes safely
     let parsedSizes = [];
@@ -52,7 +60,11 @@ const addProduct = async (req, res) => {
     await product.save();
 
     console.log("✅ Product Added:", productData);
-    res.json({ success: true, message: "Product added successfully!", product });
+    res.json({
+      success: true,
+      message: "Product added successfully!",
+      product,
+    });
   } catch (error) {
     console.error("❌ Error adding product:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -64,12 +76,21 @@ const addProduct = async (req, res) => {
 =========================== */
 const listProducts = async (req, res) => {
   try {
-    const { category, subCategory, sortBy, page = 1, limit = 10 } = req.query;
+    const {
+      category,
+      subCategory,
+      sortBy,
+      page = 1,
+      limit = 10,
+      bestseller,
+    } = req.query;
 
     // ✅ Build filter
     const filter = {};
     if (category) filter.category = category;
     if (subCategory) filter.subCategory = subCategory;
+    // allow filtering by bestseller flag via query ?bestseller=true
+    if (bestseller !== undefined) filter.bestseller = bestseller === "true";
 
     // ✅ Pagination setup
     const skip = (Number(page) - 1) * Number(limit);
@@ -81,7 +102,11 @@ const listProducts = async (req, res) => {
     if (sortBy === "priceHighLow") sort = { price: -1 };
 
     // ✅ Query database
-    const products = await productModel.find(filter).sort(sort).skip(skip).limit(Number(limit));
+    const products = await productModel
+      .find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(Number(limit));
     const total = await productModel.countDocuments(filter);
 
     res.json({
@@ -105,7 +130,9 @@ const singleProduct = async (req, res) => {
     const product = await productModel.findById(id);
 
     if (!product)
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
 
     res.json({ success: true, product });
   } catch (error) {
@@ -122,7 +149,9 @@ const removeProducts = async (req, res) => {
 
     const product = await productModel.findById(id);
     if (!product)
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
 
     // Optionally: delete images from Cloudinary (advanced)
     // for (const url of product.image) {
